@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>HomeFix Mobile App</title>
+  
+  <!-- Bootstrap 5 & Google Fonts -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: 'Hind Siliguri', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      padding-bottom: 30px;
+    }
+    .app-header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #ffffff;
+      padding: 16px 20px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .card-custom {
+      border: none;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      background: #ffffff;
+    }
+    .section-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #2563eb;
+      border-left: 4px solid #2563eb;
+      padding-left: 8px;
+    }
+    .form-control, .form-select {
+      border-radius: 10px;
+      padding: 0.7rem 0.9rem;
+      border: 1px solid #cbd5e1;
+      font-size: 0.95rem;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+    .summary-card {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+    }
+    .btn-submit {
+      background: #2563eb;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      padding: 0.85rem;
+      font-size: 1rem;
+    }
+    @media print {
+      body * { visibility: hidden; }
+      #invoiceModalContent, #invoiceModalContent * { visibility: visible; }
+      #invoiceModalContent { position: absolute; left: 0; top: 0; width: 100%; }
+      .no-print { display: none !important; }
+    }
+    .invoice-box {
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 24px;
+      background: #ffffff;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="app-header d-flex justify-content-between align-items-center mb-3">
+  <div class="d-flex align-items-center">
+    <i class="bi bi-tools fs-4 text-warning me-2"></i>
+    <div>
+      <h6 class="mb-0 fw-bold">HomeFix App</h6>
+      <small class="text-white-50" style="font-size: 0.75rem;">GitHub Web App</small>
+    </div>
+  </div>
+  <span class="badge bg-success rounded-pill px-2 py-1"><i class="bi bi-wifi small"></i> Live API</span>
+</div>
+
+<div class="container px-3">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8 p-0">
+      
+      <div class="card card-custom p-3 p-md-4 mb-4">
+        <form id="bookingForm">
+          
+          <!-- Section 1 -->
+          <div class="mb-4">
+            <h6 class="section-title mb-3">১. কাস্টমার তথ্য</h6>
+            <div class="row g-2">
+              <div class="col-12">
+                <label class="form-label small fw-medium text-secondary">কাস্টমারের নাম *</label>
+                <input type="text" id="customerName" class="form-control" required placeholder="যেমন: মো: আরিফুল ইসলাম">
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-medium text-secondary">মোবাইল নম্বর *</label>
+                <input type="tel" id="customerPhone" class="form-control" required placeholder="017XXXXXXXX">
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-medium text-secondary">ঠিকানা *</label>
+                <input type="text" id="customerAddress" class="form-control" required placeholder="বাসা/ফ্ল্যাট নম্বর, রোড, এলাকা">
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2 -->
+          <div class="mb-4">
+            <h6 class="section-title mb-3">২. সার্ভিস নির্বাচন</h6>
+            <div class="row g-2">
+              
+              <div class="col-12">
+                <label class="form-label small fw-medium text-secondary">ক্যাটাগরি *</label>
+                <select id="categorySelect" class="form-select" onchange="onCategoryChange()" required disabled>
+                  <option value="">-- ক্যাটালগ লোড হচ্ছে... --</option>
+                </select>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label small fw-medium text-secondary">সাব-ক্যাটাগরি *</label>
+                <select id="subCategorySelect" class="form-select" onchange="onSubCategoryChange()" required disabled>
+                  <option value="">-- আগে ক্যাটাগরি বাছুন --</option>
+                </select>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label small fw-medium text-secondary">নির্দিষ্ট সার্ভিস *</label>
+                <select id="serviceSelect" class="form-select" onchange="onServiceChange()" required disabled>
+                  <option value="">-- আগে সাব-ক্যাটাগরি বাছুন --</option>
+                </select>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Section 3 -->
+          <div class="mb-4">
+            <h6 class="section-title mb-3">৩. বিলিং ও অ্যাসাইনমেন্ট</h6>
+            
+            <div class="row g-2 mb-2">
+              <div class="col-6">
+                <label class="form-label small fw-medium text-secondary">মূল ফি (BDT)</label>
+                <input type="number" id="basePrice" class="form-control bg-light fw-bold" readonly value="0">
+              </div>
+              <div class="col-6">
+                <label class="form-label small fw-medium text-secondary">কনভেয়েন্স ফি</label>
+                <input type="number" id="distanceFee" class="form-control" value="50" oninput="calculateTotal()">
+              </div>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label small fw-medium text-secondary">টেকনিশিয়ান কমিশন</label>
+                <div class="input-group">
+                  <input type="number" id="commissionPercent" class="form-control" value="70" oninput="calculateTotal()">
+                  <span class="input-group-text">%</span>
+                </div>
+              </div>
+              <div class="col-6 d-flex align-items-end">
+                <div class="form-check form-switch mb-2">
+                  <input class="form-check-input" type="checkbox" id="isEmergency" onchange="calculateTotal()">
+                  <label class="form-check-label fw-bold text-danger small" for="isEmergency">ইমার্জেন্সি (+২০০)</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-medium text-secondary">অ্যাসাইনকৃত টেকনিশিয়ান</label>
+              <input type="text" id="technicianName" class="form-control" placeholder="যেমন: মো: রফিকুল ইসলাম">
+            </div>
+          </div>
+
+          <!-- Summary Box -->
+          <div class="summary-card p-3 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="text-secondary small">মোট কাস্টমার বিল:</span>
+              <span class="fs-6 fw-bold text-dark" id="lblTotalBill">0 BDT</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="text-secondary small">টেকনিশিয়ান লভ্যাংশ:</span>
+              <span class="fw-semibold text-success small" id="lblTechPayout">0 BDT</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-secondary small">কোম্পানি রেভিনিউ:</span>
+              <span class="fw-semibold text-primary small" id="lblCompanyRevenue">0 BDT</span>
+            </div>
+          </div>
+
+          <button type="submit" id="btnSubmit" class="btn btn-primary btn-submit w-100 shadow-sm">
+            <i class="bi bi-check-circle me-1"></i> বুকিং ও ইনভয়েস তৈরি
+          </button>
+
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Invoice Modal -->
+<div class="modal fade" id="invoiceModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header no-print">
+        <h5 class="modal-title fw-bold text-primary"><i class="bi bi-receipt me-2"></i>সার্ভিস ইনভয়েস</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4" id="invoiceModalContent">
+        <div class="invoice-box">
+          <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-3">
+            <div>
+              <h4 class="fw-bold text-primary mb-0">HomeFix App</h4>
+              <small class="text-muted">Professional Home Repairs & Maintenance</small>
+            </div>
+            <div class="text-end">
+              <span class="badge bg-primary px-3 py-2 fs-6" id="invBookingId">HF-000000</span>
+              <div class="text-muted small mt-1" id="invDate">-</div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <div class="col-6">
+              <h6 class="fw-bold text-secondary mb-1 small">কাস্টমার তথ্য:</h6>
+              <div class="fw-bold" id="invCustName">-</div>
+              <div class="small text-muted" id="invCustPhone">-</div>
+              <div class="small text-muted" id="invCustAddress">-</div>
+            </div>
+            <div class="col-6 text-end">
+              <h6 class="fw-bold text-secondary mb-1 small">অ্যাসাইনকৃত টেকনিশিয়ান:</h6>
+              <div class="fw-bold" id="invTechName">-</div>
+              <small class="badge bg-light text-dark border">HomeFix Verified Tech</small>
+            </div>
+          </div>
+
+          <table class="table table-bordered mb-3 small">
+            <thead class="table-light">
+              <tr>
+                <th>সার্ভিস বিবরণ</th>
+                <th class="text-end">পরিমাণ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <strong id="invService">-</strong><br>
+                  <span class="text-muted small" id="invCategory">-</span>
+                </td>
+                <td class="text-end fw-bold" id="invBasePrice">৳0</td>
+              </tr>
+              <tr>
+                <td>কনভেয়েন্স / যাতায়াত ফি</td>
+                <td class="text-end" id="invDistanceFee">৳0</td>
+              </tr>
+              <tr id="rowEmergency" style="display:none;">
+                <td class="text-danger">ইমার্জেন্সি সার্ভিস চার্জ</td>
+                <td class="text-end text-danger" id="invEmergencyFee">৳0</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr class="table-active fs-6 fw-bold">
+                <td>সর্বমোট পরিশোধযোগ্য বিল</td>
+                <td class="text-end text-primary" id="invTotalBill">৳0</td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+            <small class="text-muted">ধন্যবাদ HomeFix ব্যবহার করার জন্য!</small>
+            <small class="text-muted">Helpline: +880 1700-000000</small>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer no-print">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">বন্ধ করুন</button>
+        <button type="button" class="btn btn-primary" onclick="window.print()"><i class="bi bi-printer me-1"></i> প্রিন্ট / PDF ডাউনলোড</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // 🔗 আপনার Google Apps Script এর Web App URL টি এখানে পেস্ট করুন
+  const API_URL = "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL"; 
+
+  let fullCatalog = [];
+  let invoiceModal;
+
+  window.onload = function() {
+    invoiceModal = new bootstrap.Modal(document.getElementById('invoiceModal'));
+    fetchCatalog();
+  };
+
+  function fetchCatalog() {
+    fetch(API_URL)
+      .then(res => res.json())
+      .then(response => {
+        if (response.status === 'success') {
+          initializeCatalog(response.data);
+        } else {
+          alert('ক্যাটালগ ফেচ করতে সমস্যা: ' + response.message);
+        }
+      })
+      .catch(err => alert('API সংযোগ ব্যর্থ: ' + err.message));
+  }
+
+  function initializeCatalog(data) {
+    fullCatalog = data;
+    const categories = [...new Set(data.map(item => item.category))];
+    const catSelect = document.getElementById('categorySelect');
+    catSelect.innerHTML = '<option value="">-- ক্যাটাগরি বেছে নিন --</option>';
+    
+    categories.forEach(cat => {
+      let opt = document.createElement('option');
+      opt.value = cat;
+      opt.textContent = cat;
+      catSelect.appendChild(opt);
+    });
+    
+    catSelect.disabled = false;
+  }
+
+  function onCategoryChange() {
+    const selectedCat = document.getElementById('categorySelect').value;
+    const subCatSelect = document.getElementById('subCategorySelect');
+    const serviceSelect = document.getElementById('serviceSelect');
+    
+    subCatSelect.innerHTML = '<option value="">-- সাব-ক্যাটাগরি বেছে নিন --</option>';
+    serviceSelect.innerHTML = '<option value="">-- আগে সাব-ক্যাটাগরি বাছুন --</option>';
+    serviceSelect.disabled = true;
+    document.getElementById('basePrice').value = 0;
+    calculateTotal();
+
+    if (!selectedCat) {
+      subCatSelect.disabled = true;
+      return;
+    }
+
+    const filteredSubCats = [...new Set(
+      fullCatalog
+        .filter(item => item.category === selectedCat)
+        .map(item => item.subCategory)
+    )];
+
+    filteredSubCats.forEach(subCat => {
+      let opt = document.createElement('option');
+      opt.value = subCat;
+      opt.textContent = subCat;
+      subCatSelect.appendChild(opt);
+    });
+
+    subCatSelect.disabled = false;
+  }
+
+  function onSubCategoryChange() {
+    const selectedCat = document.getElementById('categorySelect').value;
+    const selectedSubCat = document.getElementById('subCategorySelect').value;
+    const serviceSelect = document.getElementById('serviceSelect');
+
+    serviceSelect.innerHTML = '<option value="">-- নির্দিষ্ট সার্ভিস বেছে নিন --</option>';
+    document.getElementById('basePrice').value = 0;
+    calculateTotal();
+
+    if (!selectedSubCat) {
+      serviceSelect.disabled = true;
+      return;
+    }
+
+    const filteredServices = fullCatalog.filter(
+      item => item.category === selectedCat && item.subCategory === selectedSubCat
+    );
+
+    filteredServices.forEach(item => {
+      let opt = document.createElement('option');
+      opt.value = item.serviceName;
+      opt.setAttribute('data-price', item.price);
+      opt.textContent = `${item.serviceName} - ৳${item.price}`;
+      serviceSelect.appendChild(opt);
+    });
+
+    serviceSelect.disabled = false;
+  }
+
+  function onServiceChange() {
+    const serviceSelect = document.getElementById('serviceSelect');
+    const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+    const price = selectedOption.getAttribute('data-price') || 0;
+    
+    document.getElementById('basePrice').value = price;
+    calculateTotal();
+  }
+
+  function calculateTotal() {
+    const basePrice = parseFloat(document.getElementById('basePrice').value) || 0;
+    const distanceFee = parseFloat(document.getElementById('distanceFee').value) || 0;
+    const isEmergency = document.getElementById('isEmergency').checked;
+    const commPercent = parseFloat(document.getElementById('commissionPercent').value) || 0;
+
+    const emergencyFee = isEmergency ? 200 : 0;
+    const totalBill = basePrice + emergencyFee + distanceFee;
+    const techPayout = (basePrice * (commPercent / 100)) + distanceFee;
+    const companyRevenue = totalBill - techPayout;
+
+    document.getElementById('lblTotalBill').innerText = totalBill + ' BDT';
+    document.getElementById('lblTechPayout').innerText = techPayout + ' BDT';
+    document.getElementById('lblCompanyRevenue').innerText = companyRevenue + ' BDT';
+  }
+
+  document.getElementById('bookingForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const btn = document.getElementById('btnSubmit');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>বুকিং প্রসেস হচ্ছে...';
+
+    const formData = {
+      customerName: document.getElementById('customerName').value,
+      customerPhone: document.getElementById('customerPhone').value,
+      customerAddress: document.getElementById('customerAddress').value,
+      category: document.getElementById('categorySelect').value,
+      subCategory: document.getElementById('subCategorySelect').value,
+      serviceName: document.getElementById('serviceSelect').value,
+      basePrice: document.getElementById('basePrice').value,
+      distanceFee: document.getElementById('distanceFee').value,
+      commissionPercent: document.getElementById('commissionPercent').value,
+      isEmergency: document.getElementById('isEmergency').checked,
+      technicianName: document.getElementById('technicianName').value
+    };
+
+    fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify(formData)
+    })
+    .then(res => res.json())
+    .then(res => {
+      if (res.status === 'success') {
+        document.getElementById('invBookingId').innerText = res.bookingId;
+        document.getElementById('invDate').innerText = res.date;
+        document.getElementById('invCustName').innerText = res.customerName;
+        document.getElementById('invCustPhone').innerText = res.customerPhone;
+        document.getElementById('invCustAddress').innerText = res.customerAddress;
+        document.getElementById('invTechName').innerText = res.technicianName;
+        
+        document.getElementById('invService').innerText = res.serviceName;
+        document.getElementById('invCategory').innerText = res.category + ' > ' + res.subCategory;
+        document.getElementById('invBasePrice').innerText = '৳' + res.basePrice;
+        document.getElementById('invDistanceFee').innerText = '৳' + res.distanceFee;
+        
+        if (res.emergencyFee > 0) {
+          document.getElementById('rowEmergency').style.display = 'table-row';
+          document.getElementById('invEmergencyFee').innerText = '৳' + res.emergencyFee;
+        } else {
+          document.getElementById('rowEmergency').style.display = 'none';
+        }
+        
+        document.getElementById('invTotalBill').innerText = '৳' + res.totalBill;
+
+        document.getElementById('bookingForm').reset();
+        document.getElementById('subCategorySelect').innerHTML = '<option value="">-- আগে ক্যাটাগরি বাছুন --</option>';
+        document.getElementById('subCategorySelect').disabled = true;
+        document.getElementById('serviceSelect').innerHTML = '<option value="">-- আগে সাব-ক্যাটাগরি বাছুন --</option>';
+        document.getElementById('serviceSelect').disabled = true;
+        calculateTotal();
+        
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check-circle me-1"></i> বুকিং ও ইনভয়েস তৈরি';
+
+        invoiceModal.show();
+      } else {
+        alert('ত্রুটি: ' + res.message);
+        btn.disabled = false;
+      }
+    })
+    .catch(err => {
+      alert('নেটওয়ার্ক ত্রুটি: ' + err.message);
+      btn.disabled = false;
+    });
+  });
+</script>
+
+</body>
+</html>
